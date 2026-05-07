@@ -38,6 +38,27 @@ textarea {
   font: inherit;
 }
 
+.language-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+  min-width: 84px;
+  min-height: 36px;
+  padding: 8px 13px;
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(16, 23, 35, 0.86);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+  cursor: pointer;
+  backdrop-filter: blur(14px);
+}
+
+.language-toggle:hover {
+  border-color: rgba(110, 231, 168, 0.5);
+}
+
 .app-shell {
   width: min(1180px, calc(100% - 32px));
   margin: 0 auto;
@@ -1359,7 +1380,12 @@ h1 {
 @media (max-width: 560px) {
   .app-shell {
     width: min(100% - 22px, 1180px);
-    padding-top: 18px;
+    padding-top: 58px;
+  }
+
+  .language-toggle {
+    top: 12px;
+    right: 11px;
   }
 
   .hero,

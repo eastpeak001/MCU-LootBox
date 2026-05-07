@@ -7,25 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <button class="language-toggle" id="languageToggleBtn" type="button">English</button>
   <main class="app-shell">
     <section class="hero">
       <p class="eyebrow">Multi Module LootBox</p>
-      <h1>MCU LootBox 嵌入式项目开箱生成器</h1>
-      <p class="intro">
+      <h1 data-i18n="hero.title">MCU LootBox 嵌入式项目开箱生成器</h1>
+      <p class="intro" data-i18n="hero.subtitle">
         一次启动 6 条硬件模块抽奖轨道：主控、感知、显示交互、通信、存储和执行器同步滚动，并按顺序依次停下。全部模块停靠后，系统会自动合成一个完整嵌入式项目方案。
       </p>
     </section>
 
     <section class="rarity-panel" aria-label="稀有度概率">
-      <div class="rarity-chip blue">蓝色 普通入门 65%</div>
-      <div class="rarity-chip pink">粉色 进阶实用 28%</div>
-      <div class="rarity-chip gold">金色 高级展示 7%</div>
+      <div class="rarity-chip blue" data-i18n="rarity.blue">蓝色 普通入门 65%</div>
+      <div class="rarity-chip pink" data-i18n="rarity.pink">粉色 进阶实用 28%</div>
+      <div class="rarity-chip gold" data-i18n="rarity.gold">金色 高级展示 7%</div>
     </section>
 
     <section class="mode-panel" aria-label="项目方向模式">
       <div class="section-heading">
-        <h2>项目方向模式</h2>
-        <p>选择方向后，抽奖仍保留稀有度概率，但会更倾向于相关硬件。</p>
+        <h2 data-i18n="mode.title">项目方向模式</h2>
+        <p data-i18n="mode.subtitle">选择方向后，抽奖仍保留稀有度概率，但会更倾向于相关硬件。</p>
       </div>
       <div class="mode-grid" id="modeGrid">
         <button class="mode-button active" type="button" data-mode="random">随机模式</button>
@@ -45,12 +46,12 @@
 
     <section class="module-config-panel">
       <div class="section-heading">
-        <h2>模块配置</h2>
+        <h2 data-i18n="moduleConfig.title">模块配置</h2>
         <p id="moduleCountText">当前模块数：6 / 10</p>
       </div>
       <div class="module-config-controls">
         <label class="module-select-label hidden">
-          <span>添加模块类型</span>
+          <span data-i18n="moduleConfig.addType">添加模块类型</span>
           <select id="moduleTypeSelect">
             <option value="sensor">感知模块</option>
             <option value="display">显示交互</option>
@@ -59,8 +60,8 @@
             <option value="actuator">执行器/输出模块</option>
           </select>
         </label>
-        <button class="secondary-button" id="addModuleBtn" type="button">添加模块</button>
-        <button class="secondary-button" id="resetModulesBtn" type="button">重置模块配置</button>
+        <button class="secondary-button" id="addModuleBtn" type="button" data-i18n="buttons.addModule">添加模块</button>
+        <button class="secondary-button" id="resetModulesBtn" type="button" data-i18n="buttons.resetModules">重置模块配置</button>
       </div>
     </section>
 
@@ -73,21 +74,21 @@
       <div class="module-tracks" id="tracksContainer"></div>
 
       <div class="control-row">
-        <button class="primary-button" id="startBtn" type="button">开始抽奖</button>
+        <button class="primary-button" id="startBtn" type="button" data-i18n="buttons.start">开始抽奖</button>
         <button class="sound-button sound-on" id="soundToggleBtn" type="button">音效：开启</button>
       </div>
     </section>
 
     <section class="pool-shell">
       <div class="section-heading">
-        <h2>奖池一览 / 硬件图鉴</h2>
+        <h2 data-i18n="pool.title">奖池一览 / 硬件图鉴</h2>
         <button class="secondary-button" id="poolToggleBtn" type="button" aria-expanded="false">查看奖池</button>
       </div>
       <section id="poolOverview" class="pool-overview hidden" aria-label="奖池一览">
         <div class="pool-controls">
           <label class="pool-search">
-            <span>搜索硬件</span>
-            <input id="poolSearchInput" type="search" placeholder="输入 MPU、OLED、I2C 等关键词">
+            <span data-i18n="pool.searchLabel">搜索硬件</span>
+            <input id="poolSearchInput" type="search" placeholder="输入 MPU、OLED、I2C 等关键词" data-i18n-placeholder="pool.searchPlaceholder">
           </label>
           <div class="pool-filters" id="poolRarityFilters" aria-label="稀有度筛选">
             <button class="pool-filter-button active" type="button" data-pool-rarity="all">全部</button>
@@ -111,25 +112,25 @@
 
       <div class="action-row">
         <button class="secondary-button" id="favoriteBtn" type="button">收藏当前项目</button>
-        <button class="secondary-button" id="copyMarkdownBtn" type="button">复制项目表为 Markdown</button>
-        <button class="secondary-button" id="copyBomBtn" type="button">复制 BOM 为 Markdown</button>
-        <button class="secondary-button" id="copyRoadmapBtn" type="button">复制路线图 Markdown</button>
-        <button class="secondary-button" id="copyPromptBtn" type="button">生成 Codex 开发提示词</button>
-        <button class="secondary-button" id="generateReadmeBtn" type="button">生成完整 README</button>
-        <button class="secondary-button" id="exportJsonBtn" type="button">导出 JSON</button>
-        <button class="secondary-button" id="importJsonBtn" type="button">导入 JSON</button>
+        <button class="secondary-button" id="copyMarkdownBtn" type="button" data-i18n="buttons.copyMarkdown">复制项目表为 Markdown</button>
+        <button class="secondary-button" id="copyBomBtn" type="button" data-i18n="buttons.copyBomMarkdown">复制 BOM 为 Markdown</button>
+        <button class="secondary-button" id="copyRoadmapBtn" type="button" data-i18n="buttons.copyRoadmapMarkdown">复制路线图 Markdown</button>
+        <button class="secondary-button" id="copyPromptBtn" type="button" data-i18n="buttons.codexPrompt">生成 Codex 开发提示词</button>
+        <button class="secondary-button" id="generateReadmeBtn" type="button" data-i18n="buttons.generateReadme">生成完整 README</button>
+        <button class="secondary-button" id="exportJsonBtn" type="button" data-i18n="buttons.exportJson">导出 JSON</button>
+        <button class="secondary-button" id="importJsonBtn" type="button" data-i18n="buttons.importJson">导入 JSON</button>
         <input class="hidden" id="importJsonInput" type="file" accept="application/json,.json">
       </div>
 
       <label class="prompt-box hidden" id="promptBox">
-        <span>Codex 开发提示词</span>
+        <span data-i18n="labels.codexPrompt">Codex 开发提示词</span>
         <textarea id="promptText" readonly></textarea>
       </label>
 
       <section class="readme-preview hidden" id="readmePreview">
         <div class="readme-preview-head">
           <h3>GitHub README.md 预览</h3>
-          <button class="secondary-button" id="copyReadmeBtn" type="button">复制 README</button>
+          <button class="secondary-button" id="copyReadmeBtn" type="button" data-i18n="buttons.copyReadme">复制 README</button>
         </div>
         <textarea id="readmeText" readonly></textarea>
       </section>

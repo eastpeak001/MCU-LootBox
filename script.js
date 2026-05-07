@@ -406,6 +406,7 @@ function toHardwareOption(name, rarity, category) {
   const metaInfo = hardwareMeta[name] || meta("未知", "Unknown", "medium", "medium", "暂未录入详细参数，实际制作前请查阅资料手册。");
   return {
     name,
+    nameEn: inferEnglishPartName(name),
     rarity,
     category,
     voltage: metaInfo.voltage,
@@ -413,7 +414,9 @@ function toHardwareOption(name, rarity, category) {
     powerLevel: metaInfo.powerLevel,
     difficulty: metaInfo.difficulty,
     notes: metaInfo.notes,
-    alternatives: getDefaultAlternatives(category)
+    notesEn: getEnglishNotes(category),
+    alternatives: getDefaultAlternatives(category),
+    alternativesEn: getDefaultAlternativesEn(category)
   };
 }
 
@@ -438,6 +441,165 @@ function getHardwareName(hardware) {
   return typeof hardware === "string" ? hardware : hardware.name;
 }
 
+const hardwareEnglishNames = {
+  "光敏电阻": "Photoresistor",
+  "红外避障模块": "IR Obstacle Avoidance Module",
+  "NTC温度传感器": "NTC Temperature Sensor",
+  "土壤湿度传感器": "Soil Moisture Sensor",
+  "倾斜开关": "Tilt Switch",
+  "霍尔传感器": "Hall Sensor",
+  "雨滴传感器": "Raindrop Sensor",
+  "超声波测距模块": "Ultrasonic Distance Module",
+  "MQ气体传感器": "MQ Gas Sensor",
+  "TCS34725颜色传感器": "TCS34725 Color Sensor",
+  "火焰传感器": "Flame Sensor",
+  "VL53L0X激光测距": "VL53L0X Laser Distance Sensor",
+  "ICM20948姿态传感器": "ICM20948 IMU Sensor",
+  "PMS5003粉尘传感器": "PMS5003 Dust Sensor",
+  "SGP30空气质量传感器": "SGP30 Air Quality Sensor",
+  "MLX90614红外测温": "MLX90614 IR Temperature Sensor",
+  "LED + 蜂鸣器": "LED + Buzzer",
+  "四位数码管": "4-Digit 7-Segment Display",
+  "独立按键": "Push Button",
+  "矩阵键盘": "Matrix Keypad",
+  "电位器": "Potentiometer",
+  "双位LED数码管": "2-Digit LED Display",
+  "OLED + 按键": "OLED + Buttons",
+  "MAX7219点阵屏": "MAX7219 Dot Matrix Display",
+  "WS2812 RGB灯带": "WS2812 RGB LED Strip",
+  "旋转编码器 + OLED": "Rotary Encoder + OLED",
+  "电子墨水屏": "E-Paper Display",
+  "触摸屏": "Touch Screen",
+  "高清IPS彩屏": "HD IPS Display",
+  "圆形LCD屏": "Round LCD Display",
+  "HMI串口屏": "HMI UART Display",
+  "多功能旋钮屏": "Multifunction Knob Display",
+  "小尺寸GUI彩屏": "Small GUI TFT Display",
+  "UART串口调试": "UART Debug Port",
+  "HC-05蓝牙": "HC-05 Bluetooth",
+  "DX-BT24蓝牙": "DX-BT24 Bluetooth",
+  "红外遥控接收": "IR Remote Receiver",
+  "软串口通信": "Software UART",
+  "简单单线通信": "Simple One-Wire Communication",
+  "RS485通信": "RS485 Communication",
+  "CAN通信模块": "CAN Communication Module",
+  "Zigbee模块": "Zigbee Module",
+  "BLE低功耗蓝牙": "BLE Module",
+  "Modbus RTU通信": "Modbus RTU Communication",
+  "WiFi云平台通信": "WiFi Cloud Communication",
+  "LoRa通信": "LoRa Communication",
+  "4G通信模块": "4G Communication Module",
+  "以太网通信模块": "Ethernet Module",
+  "NB-IoT通信": "NB-IoT Communication",
+  "MQTT物联网通信": "MQTT IoT Communication",
+  "Matter智能家居通信": "Matter Smart Home Communication",
+  "双模WiFi + BLE网关": "Dual-Mode WiFi + BLE Gateway",
+  "片内Flash": "On-Chip Flash",
+  "无外部存储": "No External Storage",
+  "参数保存在Flash": "Parameters Stored in Flash",
+  "简单环形缓存": "Simple Ring Buffer",
+  "串口日志输出": "UART Log Output",
+  "RAM临时缓存": "Temporary RAM Buffer",
+  "MicroSD卡模块": "MicroSD Card Module",
+  "日志缓存系统": "Log Cache System",
+  "FATFS文件系统": "FATFS File System",
+  "CSV数据日志": "CSV Data Logger",
+  "大容量SPI Flash": "Large SPI Flash",
+  "SD卡数据记录系统": "SD Card Data Logging System",
+  "云端数据同步": "Cloud Data Sync",
+  "双存储冗余": "Dual Storage Redundancy",
+  "LittleFS文件系统": "LittleFS File System",
+  "数据压缩存储": "Compressed Data Storage",
+  "断电保护日志系统": "Power-Fail Safe Log System",
+  "普通LED": "LED",
+  "蜂鸣器": "Buzzer",
+  "小马达": "Small Motor",
+  "继电器": "Relay",
+  "震动提醒马达": "Vibration Alert Motor",
+  "激光指示模块": "Laser Pointer Module",
+  "小风扇": "Small Fan",
+  "电磁铁模块": "Electromagnet Module",
+  "SG90舵机": "SG90 Servo",
+  "震动马达": "Vibration Motor",
+  "TB6612电机驱动": "TB6612 Motor Driver",
+  "RGB状态灯": "RGB Status LED",
+  "ULN2003步进电机驱动": "ULN2003 Stepper Driver",
+  "5V继电器模块": "5V Relay Module",
+  "有源蜂鸣器阵列": "Active Buzzer Array",
+  "直流电机调速": "DC Motor Speed Control",
+  "步进电机": "Stepper Motor",
+  "多路舵机控制": "Multi-Servo Control",
+  "闭环电机控制": "Closed-Loop Motor Control",
+  "无刷电机驱动": "Brushless Motor Driver",
+  "机械臂控制": "Robotic Arm Control",
+  "云台控制系统": "Gimbal Control System",
+  "线性执行器": "Linear Actuator",
+  "多轴运动控制": "Multi-Axis Motion Control"
+};
+
+function inferEnglishPartName(name) {
+  if (!name) return "";
+  if (/^[\x00-\x7F]+$/.test(name)) return name;
+  return hardwareEnglishNames[name] || name;
+}
+
+function normalizeCategoryKey(category) {
+  const labels = {
+    "主控核心": "controller",
+    "感知模块": "sensor",
+    "显示交互": "display",
+    "通信模块": "communication",
+    "存储模块": "storage",
+    "执行器/输出模块": "actuator"
+  };
+  return labels[category] || category;
+}
+
+function getEnglishNotes(partOrCategory) {
+  const rawCategory = typeof partOrCategory === "string" ? partOrCategory : (partOrCategory.categoryKey || partOrCategory.moduleKey || partOrCategory.category || "");
+  const category = normalizeCategoryKey(rawCategory);
+  const notes = {
+    controller: "Check clock, flash, RAM, voltage level, and available peripheral resources before implementation.",
+    sensor: "Check sensor voltage, interface mode, address, sampling rate, and calibration requirements.",
+    display: "Check display voltage, interface bandwidth, driver library, and current consumption.",
+    communication: "Check protocol configuration, antenna or bus wiring, power demand, and platform compatibility.",
+    storage: "Check filesystem support, write endurance, chip select pins, and power-loss protection.",
+    actuator: "Check drive current, external power supply, protection circuit, and common ground wiring."
+  };
+  return notes[category] || "Check the module datasheet for voltage, interface, and wiring details before building.";
+}
+
+function getDefaultAlternativesEn(category) {
+  const categoryKey = normalizeCategoryKey(category);
+  const alternatives = {
+    controller: ["STM32 Development Board", "ESP32 Development Board", "RP2040 Development Board"],
+    sensor: ["Same-voltage Sensor Module", "Same-interface Sensor", "Equivalent Breakout Board"],
+    display: ["OLED Display", "LCD Module", "TFT Display"],
+    communication: ["Bluetooth Module", "WiFi Module", "RS485 Module", "LoRa Module"],
+    storage: ["On-Chip Flash", "EEPROM", "SPI Flash", "MicroSD Module"],
+    actuator: ["LED", "Buzzer", "Relay", "Servo", "Motor Driver"]
+  };
+  return alternatives[categoryKey] || ["Compatible Module", "Equivalent Breakout Board"];
+}
+
+function getPartName(part) {
+  if (!part) return "";
+  return currentLang === "en" ? (part.nameEn || part.name) : part.name;
+}
+
+function getPartNotes(part) {
+  if (!part) return "";
+  return currentLang === "en" ? (part.notesEn || part.notes) : part.notes;
+}
+
+function getPartAlternatives(part) {
+  if (!part) return [];
+  const value = currentLang === "en" ? (part.alternativesEn || part.alternatives) : part.alternatives;
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  return String(value).split(/[、,]/).map((item) => item.trim()).filter(Boolean);
+}
+
 function normalizeHardwareMeta(hardware, name) {
   const base = typeof hardware === "object" && hardware !== null
     ? hardware
@@ -449,7 +611,9 @@ function normalizeHardwareMeta(hardware, name) {
     powerLevel: base.powerLevel || "medium",
     difficulty: base.difficulty || "medium",
     notes: base.notes || "实际制作前请核对器件资料手册。",
-    alternatives: Array.isArray(base.alternatives) ? base.alternatives : getDefaultAlternatives(base.category)
+    notesEn: base.notesEn || getEnglishNotes(base),
+    alternatives: Array.isArray(base.alternatives) ? base.alternatives : getDefaultAlternatives(base.category),
+    alternativesEn: Array.isArray(base.alternativesEn) ? base.alternativesEn : getDefaultAlternativesEn(base.categoryKey || base.moduleKey || base.category)
   };
 }
 
@@ -535,9 +699,361 @@ Object.assign(hardwareMeta, {
 
 activateStructuredHardwarePools();
 
+const i18n = {
+  zh: {
+    "document.title": "MCU LootBox | 嵌入式项目开箱生成器",
+    "language.toggle": "English",
+    "hero.title": "MCU LootBox 嵌入式项目开箱生成器",
+    "hero.subtitle": "一次启动 6 条硬件模块抽奖轨道：主控、感知、显示交互、通信、存储和执行器同步滚动，并按顺序依次停下。全部模块停靠后，系统会自动合成一个完整嵌入式项目方案。",
+    "rarity.blue": "蓝色 普通入门 65%",
+    "rarity.pink": "粉色 进阶实用 28%",
+    "rarity.gold": "金色 高级展示 7%",
+    "rarityLabel.blue": "蓝色 普通入门",
+    "rarityLabel.pink": "粉色 进阶实用",
+    "rarityLabel.gold": "金色 高级展示",
+    "mode.title": "项目方向模式",
+    "mode.subtitle": "选择方向后，抽奖仍保留稀有度概率，但会更倾向于相关硬件。",
+    "mode.random": "随机模式",
+    "mode.environment": "环境监测",
+    "mode.motionSense": "姿态/震动检测",
+    "mode.robotCar": "智能小车/运动控制",
+    "mode.desktopConsole": "桌面控制台",
+    "mode.dataLogger": "数据记录仪",
+    "mode.bluetoothRemote": "蓝牙遥控项目",
+    "mode.iotMonitor": "物联网监测项目",
+    "strategy.fun": "随机娱乐模式",
+    "strategy.realistic": "真实可做优先模式",
+    "moduleConfig.title": "模块配置",
+    "moduleConfig.addType": "添加模块类型",
+    "moduleConfig.count": "当前模块数：{count} / {max}",
+    "buttons.start": "开始抽奖",
+    "buttons.drawing": "抽奖中...",
+    "buttons.restart": "重新开始抽奖",
+    "buttons.reroll": "重抽",
+    "buttons.rerolling": "重抽中…",
+    "buttons.usedUp": "已用完",
+    "buttons.deleteModule": "删除模块",
+    "buttons.addSameModule": "+ 添加{label}",
+    "buttons.moduleFull": "模块数已满",
+    "buttons.limitReached": "已达上限",
+    "buttons.addModule": "添加模块",
+    "buttons.resetModules": "重置模块配置",
+    "buttons.poolOpen": "查看奖池",
+    "buttons.poolClose": "收起奖池",
+    "buttons.copyMarkdown": "复制项目表为 Markdown",
+    "buttons.copyBomMarkdown": "复制 BOM 为 Markdown",
+    "buttons.copyRoadmapMarkdown": "复制路线图 Markdown",
+    "buttons.generateReadme": "生成完整 README",
+    "buttons.copyReadme": "复制 README",
+    "buttons.exportJson": "导出 JSON",
+    "buttons.importJson": "导入 JSON",
+    "buttons.codexPrompt": "生成 Codex 开发提示词",
+    "labels.defaultModule": "默认模块",
+    "labels.codexPrompt": "Codex 开发提示词",
+    "pool.searchPlaceholder": "输入 MPU、OLED、I2C 等关键词",
+    "track.waiting": "等待抽奖",
+    "track.rolling": "滚动中",
+    "track.current": "当前：{rarity} {name}",
+    "track.remaining": "剩余重抽 {count} 次",
+    "track.rerollUsedUp": "重抽次数已用完"
+  },
+  en: {
+    "document.title": "MCU LootBox | Embedded Project Loot Generator",
+    "language.toggle": "中文",
+    "hero.title": "MCU LootBox Embedded Project Loot Generator",
+    "hero.subtitle": "Start six hardware loot tracks at once: controller, sensing, display and interaction, communication, storage, and actuator modules roll together, stop in sequence, then combine into a complete embedded project idea.",
+    "rarity.blue": "Blue Basic 65%",
+    "rarity.pink": "Pink Practical 28%",
+    "rarity.gold": "Gold Advanced 7%",
+    "rarityLabel.blue": "Blue Basic",
+    "rarityLabel.pink": "Pink Practical",
+    "rarityLabel.gold": "Gold Advanced",
+    "mode.title": "Project Direction Mode",
+    "mode.subtitle": "After choosing a direction, rarity odds stay the same, but related hardware becomes more likely.",
+    "mode.random": "Random Mode",
+    "mode.environment": "Environment Monitor",
+    "mode.motionSense": "Motion / Vibration",
+    "mode.robotCar": "Smart Car / Motion",
+    "mode.desktopConsole": "Desktop Console",
+    "mode.dataLogger": "Data Logger",
+    "mode.bluetoothRemote": "Bluetooth Remote",
+    "mode.iotMonitor": "IoT Monitor",
+    "strategy.fun": "Random Fun Mode",
+    "strategy.realistic": "Buildable First Mode",
+    "moduleConfig.title": "Module Setup",
+    "moduleConfig.addType": "Module type",
+    "moduleConfig.count": "Current modules: {count} / {max}",
+    "buttons.start": "Start Draw",
+    "buttons.drawing": "Drawing...",
+    "buttons.restart": "Restart Draw",
+    "buttons.reroll": "Reroll",
+    "buttons.rerolling": "Rerolling…",
+    "buttons.usedUp": "Used up",
+    "buttons.deleteModule": "Delete Module",
+    "buttons.addSameModule": "+ Add {label}",
+    "buttons.moduleFull": "Module limit reached",
+    "buttons.limitReached": "Type limit reached",
+    "buttons.addModule": "Add Module",
+    "buttons.resetModules": "Reset Modules",
+    "buttons.poolOpen": "View Pool",
+    "buttons.poolClose": "Hide Pool",
+    "buttons.copyMarkdown": "Markdown",
+    "buttons.copyBomMarkdown": "BOM Markdown",
+    "buttons.copyRoadmapMarkdown": "Roadmap Markdown",
+    "buttons.generateReadme": "README",
+    "buttons.copyReadme": "README",
+    "buttons.exportJson": "JSON",
+    "buttons.importJson": "Import JSON",
+    "buttons.codexPrompt": "Codex Prompt",
+    "labels.defaultModule": "Default Module",
+    "labels.codexPrompt": "Codex Prompt",
+    "pool.searchPlaceholder": "Search MPU, OLED, I2C, etc.",
+    "track.waiting": "Waiting",
+    "track.rolling": "Rolling",
+    "track.current": "Current: {rarity} {name}",
+    "track.remaining": "{count} rerolls left",
+    "track.rerollUsedUp": "No rerolls left"
+  }
+};
+
+Object.assign(i18n.zh, {
+  "document.title": "MCU LootBox | 嵌入式项目开箱生成器",
+  "language.toggle": "English",
+  "hero.title": "MCU LootBox 嵌入式项目开箱生成器",
+  "hero.subtitle": "一次启动多条硬件模块抽奖轨道，全部模块停靠后自动生成完整嵌入式项目方案。",
+  "module.controller": "主控核心",
+  "module.sensor": "感知模块",
+  "module.display": "显示交互",
+  "module.communication": "通信模块",
+  "module.storage": "存储模块",
+  "module.actuator": "执行器/输出模块",
+  "mode.random": "随机模式",
+  "mode.environment": "环境监测",
+  "mode.motionSense": "姿态/震动检测",
+  "mode.robotCar": "智能小车/运动控制",
+  "mode.desktopConsole": "桌面控制台",
+  "mode.dataLogger": "数据记录仪",
+  "mode.bluetoothRemote": "蓝牙遥控项目",
+  "mode.iotMonitor": "物联网监测项目",
+  "strategy.fun": "随机娱乐模式",
+  "strategy.realistic": "真实可做优先模式",
+  "rarity.blue": "蓝色 普通入门 65%",
+  "rarity.pink": "粉色 进阶实用 28%",
+  "rarity.gold": "金色 高级展示 7%",
+  "rarityLabel.blue": "蓝色 普通入门",
+  "rarityLabel.pink": "粉色 进阶实用",
+  "rarityLabel.gold": "金色 高级展示",
+  "rarityShort.all": "全部",
+  "rarityShort.blue": "蓝色",
+  "rarityShort.pink": "粉色",
+  "rarityShort.gold": "金色",
+  "difficulty.easy": "入门",
+  "difficulty.medium": "中等",
+  "difficulty.upper": "中等偏上",
+  "difficulty.hard": "较难",
+  "difficulty.unknown": "未知",
+  "pool.title": "奖池一览 / 硬件图鉴",
+  "pool.searchLabel": "搜索硬件",
+  "pool.searchPlaceholder": "搜索硬件、接口或关键词",
+  "pool.itemCount": "{count} 个硬件",
+  "pool.count": "{count} 个",
+  "pool.empty": "当前筛选下暂无匹配硬件",
+  "pool.expand": "展开",
+  "pool.collapse": "收起",
+  "pool.total": "当前奖池共 {count} 个硬件",
+  "pool.rarityTotals": "蓝色 {blue} 个，粉色 {pink} 个，金色 {gold} 个",
+  "pool.visibleTotals": "当前筛选显示 {total} 个：蓝色 {blue}，粉色 {pink}，金色 {gold}",
+  "pool.moduleStat": "{label} {count}",
+  "moduleConfig.count": "当前模块数：{count} / {max}",
+  "buttons.start": "开始抽奖",
+  "buttons.drawing": "抽奖中...",
+  "buttons.restart": "重新开始抽奖",
+  "buttons.reroll": "重抽",
+  "buttons.rerolling": "重抽中...",
+  "buttons.usedUp": "已用完",
+  "buttons.deleteModule": "删除模块",
+  "buttons.addSameModule": "+ 添加同类模块",
+  "buttons.moduleFull": "模块数已满",
+  "buttons.limitReached": "已达上限",
+  "buttons.resetModules": "重置模块配置",
+  "buttons.poolOpen": "查看奖池",
+  "buttons.poolClose": "收起奖池",
+  "labels.defaultModule": "默认模块",
+  "track.remaining": "剩余重抽 {count} 次",
+  "track.rerollUsedUp": "重抽次数已用完",
+  "status.modeChanged": "当前方向：{mode}；策略：{strategy}。点击开始抽奖后，相关硬件出现概率会提高。",
+  "status.strategyChanged": "当前方向：{mode}；策略：{strategy}。",
+  "sound.on": "音效：开启",
+  "sound.off": "音效：关闭"
+});
+
+Object.assign(i18n.en, {
+  "document.title": "MCU LootBox | Embedded Project Generator",
+  "language.toggle": "中文",
+  "hero.title": "MCU LootBox Embedded Project Generator",
+  "hero.subtitle": "Start multiple hardware lootbox tracks and generate a complete embedded project plan after all modules stop.",
+  "module.controller": "MCU Core",
+  "module.sensor": "Sensor Module",
+  "module.display": "Display & UI",
+  "module.communication": "Communication",
+  "module.storage": "Storage",
+  "module.actuator": "Actuator / Output",
+  "mode.random": "Random Mode",
+  "mode.environment": "Environmental Monitoring",
+  "mode.motionSense": "Motion / Vibration Detection",
+  "mode.robotCar": "Smart Car / Motion Control",
+  "mode.desktopConsole": "Desktop Console",
+  "mode.dataLogger": "Data Logger",
+  "mode.bluetoothRemote": "Bluetooth Remote Project",
+  "mode.iotMonitor": "IoT Monitoring Project",
+  "strategy.fun": "Random Fun Mode",
+  "strategy.realistic": "Practical Build Mode",
+  "rarity.blue": "Blue Common 65%",
+  "rarity.pink": "Pink Advanced 28%",
+  "rarity.gold": "Gold Premium 7%",
+  "rarityLabel.blue": "Blue Common",
+  "rarityLabel.pink": "Pink Advanced",
+  "rarityLabel.gold": "Gold Premium",
+  "rarityShort.all": "All",
+  "rarityShort.blue": "Blue",
+  "rarityShort.pink": "Pink",
+  "rarityShort.gold": "Gold",
+  "difficulty.easy": "Beginner",
+  "difficulty.medium": "Intermediate",
+  "difficulty.upper": "Upper Intermediate",
+  "difficulty.hard": "Advanced",
+  "difficulty.unknown": "Unknown",
+  "pool.title": "Hardware Pool",
+  "pool.searchLabel": "Search Hardware",
+  "pool.searchPlaceholder": "Search hardware, interface, or keyword",
+  "pool.itemCount": "{count} parts",
+  "pool.count": "{count}",
+  "pool.empty": "No matching hardware under the current filters",
+  "pool.expand": "Expand",
+  "pool.collapse": "Collapse",
+  "pool.total": "Current pool has {count} hardware parts",
+  "pool.rarityTotals": "Blue {blue}, Pink {pink}, Gold {gold}",
+  "pool.visibleTotals": "Current filter shows {total}: Blue {blue}, Pink {pink}, Gold {gold}",
+  "pool.moduleStat": "{label} {count}",
+  "moduleConfig.count": "Current modules: {count} / {max}",
+  "buttons.start": "Start Draw",
+  "buttons.drawing": "Drawing...",
+  "buttons.restart": "Start Again",
+  "buttons.reroll": "Reroll",
+  "buttons.rerolling": "Rerolling...",
+  "buttons.usedUp": "Used Up",
+  "buttons.deleteModule": "Remove Module",
+  "buttons.addSameModule": "+ Add Same Module",
+  "buttons.moduleFull": "Module Limit Reached",
+  "buttons.limitReached": "Limit Reached",
+  "buttons.resetModules": "Reset Module Setup",
+  "buttons.poolOpen": "View Hardware Pool",
+  "buttons.poolClose": "Hide Hardware Pool",
+  "labels.defaultModule": "Default Module",
+  "track.remaining": "Rerolls left: {count}",
+  "track.rerollUsedUp": "No rerolls left",
+  "status.modeChanged": "Current direction: {mode}; strategy: {strategy}. Related hardware will be more likely after starting the draw.",
+  "status.strategyChanged": "Current direction: {mode}; strategy: {strategy}.",
+  "sound.on": "Sound: On",
+  "sound.off": "Sound: Off"
+});
+
+Object.assign(i18n.zh, {
+  "result.title": "项目生成完成",
+  "result.projectName": "项目名称",
+  "result.direction": "项目方向",
+  "result.strategy": "抽取策略",
+  "result.projectDifficulty": "项目难度",
+  "result.score": "含金量评分",
+  "result.description": "项目简介",
+  "result.applications": "推荐应用方向",
+  "result.extensions": "后续扩展建议",
+  "table.slot": "槽位",
+  "table.category": "分类",
+  "table.part": "硬件",
+  "table.rarity": "稀有度",
+  "table.interface": "接口",
+  "table.voltage": "工作电压",
+  "table.difficulty": "难度",
+  "table.notes": "备注",
+  "bom.title": "BOM 清单",
+  "bom.description": "根据抽到的硬件组合自动生成，采购前请再次核对规格、封装和资料手册。",
+  "bom.category": "模块类别",
+  "bom.part": "器件名称",
+  "bom.quantity": "数量",
+  "bom.interface": "接口类型",
+  "bom.voltage": "工作电压",
+  "bom.keywords": "常见购买关键词",
+  "bom.required": "是否必须",
+  "bom.alternatives": "可替代器件",
+  "bom.notes": "备注",
+  "bom.yes": "是",
+  "bom.no": "否",
+  "compatibility.title": "兼容性分析",
+  "compatibility.green": "基本可行",
+  "compatibility.yellow": "需要注意",
+  "compatibility.red": "不建议直接制作",
+  "pin.title": "STM32 接线建议",
+  "pin.description": "根据抽到模块的接口自动生成，适合作为 STM32F103C8T6 最小系统/Blue Pill 的初始接线参考。",
+  "pin.module": "模块",
+  "pin.interface": "接口",
+  "pin.pins": "推荐引脚",
+  "pin.notes": "说明",
+  "common.collapse": "收起",
+  "common.expand": "展开"
+});
+
+Object.assign(i18n.en, {
+  "result.title": "Project Generated",
+  "result.projectName": "Project Name",
+  "result.direction": "Direction",
+  "result.strategy": "Strategy",
+  "result.projectDifficulty": "Difficulty",
+  "result.score": "Value Score",
+  "result.description": "Project Description",
+  "result.applications": "Recommended Applications",
+  "result.extensions": "Future Extensions",
+  "table.slot": "Slot",
+  "table.category": "Category",
+  "table.part": "Part",
+  "table.rarity": "Rarity",
+  "table.interface": "Interface",
+  "table.voltage": "Voltage",
+  "table.difficulty": "Difficulty",
+  "table.notes": "Notes",
+  "bom.title": "BOM",
+  "bom.description": "Generated from the selected hardware combination. Check specifications, package, and datasheets before purchasing.",
+  "bom.category": "Category",
+  "bom.part": "Part",
+  "bom.quantity": "Quantity",
+  "bom.interface": "Interface",
+  "bom.voltage": "Voltage",
+  "bom.keywords": "Keywords",
+  "bom.required": "Required",
+  "bom.alternatives": "Alternatives",
+  "bom.notes": "Notes",
+  "bom.yes": "Yes",
+  "bom.no": "No",
+  "compatibility.title": "Compatibility Analysis",
+  "compatibility.green": "Feasible",
+  "compatibility.yellow": "Needs Attention",
+  "compatibility.red": "Not Recommended",
+  "pin.title": "STM32 Pin Suggestions",
+  "pin.description": "Generated from the selected module interfaces as an initial wiring reference for STM32F103C8T6 minimum system / Blue Pill boards.",
+  "pin.module": "Module",
+  "pin.interface": "Interface",
+  "pin.pins": "Suggested Pins",
+  "pin.notes": "Notes",
+  "common.collapse": "Collapse",
+  "common.expand": "Expand"
+});
+
+let currentLang = localStorage.getItem("mcuLootBoxLang") === "en" ? "en" : "zh";
+
 const tracksContainer = document.querySelector("#tracksContainer");
 const modeGrid = document.querySelector("#modeGrid");
 const strategySwitch = document.querySelector("#strategySwitch");
+const languageToggleBtn = document.querySelector("#languageToggleBtn");
 const startBtn = document.querySelector("#startBtn");
 const soundToggleBtn = document.querySelector("#soundToggleBtn");
 const statusText = document.querySelector("#statusText");
@@ -618,11 +1134,76 @@ const projectState = {
   hasGeneratedProject: false
 };
 
+function t(key, params = {}) {
+  const text = (i18n[currentLang] && i18n[currentLang][key]) || i18n.zh[key] || key;
+  return Object.keys(params).reduce((result, name) => {
+    return result.replaceAll(`{${name}}`, String(params[name]));
+  }, text);
+}
+
+function getCurrentLang() {
+  return currentLang;
+}
+
+function setLanguage(lang) {
+  currentLang = lang === "en" ? "en" : "zh";
+  localStorage.setItem("mcuLootBoxLang", currentLang);
+  refreshSlotLabels();
+  applyStaticTranslations();
+}
+
+function applyStaticTranslations() {
+  document.documentElement.lang = currentLang === "en" ? "en" : "zh-CN";
+  document.title = t("document.title");
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    if (element.id === "startBtn") return;
+    element.textContent = t(element.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    element.setAttribute("placeholder", t(element.dataset.i18nPlaceholder));
+  });
+  modeGrid.querySelectorAll("[data-mode]").forEach((button) => {
+    button.textContent = t(`mode.${button.dataset.mode}`);
+  });
+  strategySwitch.querySelectorAll("[data-strategy]").forEach((button) => {
+    button.textContent = t(`strategy.${button.dataset.strategy}`);
+  });
+  poolRarityFilters.querySelectorAll("[data-pool-rarity]").forEach((button) => {
+    button.textContent = t(`rarityShort.${button.dataset.poolRarity}`);
+  });
+  const resultTitle = document.querySelector("#resultSection .section-heading h2");
+  if (resultTitle) resultTitle.textContent = t("result.title");
+  if (languageToggleBtn) languageToggleBtn.textContent = t("language.toggle");
+  if (promptBoxLabel) promptBoxLabel.textContent = t("labels.codexPrompt");
+  updateSoundButton();
+  if (startBtn) {
+    startBtn.textContent = projectState.isRolling
+      ? t("buttons.drawing")
+      : (projectState.hasGeneratedProject ? t("buttons.restart") : t("buttons.start"));
+  }
+  updateModuleConfigUi();
+  updateRerollControls();
+  updatePoolToggleText();
+  if (poolOverviewVisible) renderPoolOverview();
+  if (generatedProject) renderProjectResult(generatedProject);
+}
+
+window.t = t;
+window.getCurrentLang = getCurrentLang;
+window.setLanguage = setLanguage;
+window.applyStaticTranslations = applyStaticTranslations;
+
+applyStaticTranslations();
 initEmptyTracks();
 updateRerollControls();
 loadHistory();
 renderHistory();
 
+if (languageToggleBtn) {
+  languageToggleBtn.addEventListener("click", () => {
+    setLanguage(getCurrentLang() === "zh" ? "en" : "zh");
+  });
+}
 startBtn.addEventListener("click", startDraw);
 soundToggleBtn.addEventListener("click", toggleSound);
 modeGrid.addEventListener("click", handleModeClick);
@@ -643,7 +1224,7 @@ copyRoadmapBtn.addEventListener("click", () => {
 copyPromptBtn.addEventListener("click", () => {
   if (!generatedProject) return;
   const prompt = buildCodexPrompt(generatedProject);
-  promptBoxLabel.textContent = "Codex 开发提示词";
+  promptBoxLabel.textContent = t("labels.codexPrompt");
   promptText.value = prompt;
   promptBox.classList.remove("hidden");
   copyText(prompt, "Codex 开发提示词已复制。");
@@ -677,7 +1258,7 @@ function initEmptyTracks() {
     <div class="module-track" data-module-key="${slot.id}">
       <div class="module-name">
         <strong>${slot.label}</strong>
-        <span>等待抽奖</span>
+        <span>${t("track.waiting")}</span>
       </div>
       <div class="track-window">
         <div class="track-pointer" aria-hidden="true"></div>
@@ -706,8 +1287,19 @@ function createSlot(category, removable = true, forcedId = null) {
 }
 
 function getSlotLabel(category, index) {
-  const base = getBaseModule(category).label;
+  const base = getModuleLabel(category);
   return index <= 1 ? base : `${base} ${index}`;
+}
+
+function getModuleLabel(category) {
+  return t(`module.${category}`);
+}
+
+function refreshSlotLabels() {
+  projectState.slots.forEach((slot) => {
+    const index = Number(slot.id.split("_").pop()) || 1;
+    slot.label = getSlotLabel(slot.category, index);
+  });
 }
 
 function getNextSlotIndex(category) {
@@ -726,12 +1318,14 @@ function getBaseModule(category) {
 
 function createModuleFromSlot(slot, index = 0) {
   const base = getBaseModule(slot.category);
+  const slotIndex = Number(slot.id.split("_").pop()) || 1;
+  const label = getSlotLabel(slot.category, slotIndex);
   return {
     ...base,
     key: slot.id,
     slotId: slot.id,
     categoryKey: slot.category,
-    label: slot.label,
+    label,
     removable: slot.removable,
     stopMs: Math.min(3200 + index * 600, 9000)
   };
@@ -742,7 +1336,7 @@ function getSlotById(slotId) {
 }
 
 function updateModuleConfigUi() {
-  moduleCountText.textContent = `当前模块数：${projectState.slots.length} / ${maxModuleSlots}`;
+  moduleCountText.textContent = t("moduleConfig.count", { count: projectState.slots.length, max: maxModuleSlots });
   const disabled = projectState.isRolling;
   if (addModuleBtn) addModuleBtn.disabled = disabled || projectState.slots.length >= maxModuleSlots;
   resetModulesBtn.disabled = disabled;
@@ -901,7 +1495,7 @@ function renderSelectedPartsOnTracks() {
     if (!trackEl || !item) return;
     const labelEl = trackEl.querySelector(".track-result") || trackEl.querySelector(".module-name span");
     if (labelEl) {
-      labelEl.textContent = `当前：${item.rarityLabel || ""} ${item.name}`.trim();
+      labelEl.textContent = t("track.current", { rarity: getRarityLabel(item.rarityKey || item.rarity), name: getPartName(item) }).trim();
     }
   });
 }
@@ -909,6 +1503,9 @@ function renderSelectedPartsOnTracks() {
 function setRollingState(isRolling) {
   projectState.isRolling = isRolling;
   startBtn.disabled = isRolling;
+  if (!isRolling) {
+    startBtn.textContent = projectState.hasGeneratedProject ? t("buttons.restart") : t("buttons.start");
+  }
   updateRerollControls();
   updateModuleConfigUi();
 }
@@ -919,6 +1516,10 @@ function updateRerollControls() {
     if (!trackEl) return;
     const headerEl = trackEl.querySelector(".module-name");
     if (!headerEl) return;
+    const titleEl = headerEl.querySelector("strong");
+    const slotIndex = Number(slot.id.split("_").pop()) || 1;
+    slot.label = getSlotLabel(slot.category, slotIndex);
+    if (titleEl) titleEl.textContent = slot.label;
 
     let resultEl = headerEl.querySelector(".track-result");
     const oldStatusEl = headerEl.querySelector("span:not(.track-result):not(.reroll-count)");
@@ -963,31 +1564,34 @@ function updateRerollControls() {
       deleteEl.className = "delete-slot-button remove-slot-btn";
       deleteEl.type = "button";
       deleteEl.dataset.deleteSlot = slot.id;
-      deleteEl.textContent = "删除模块";
       headerEl.appendChild(deleteEl);
     }
+    if (deleteEl) deleteEl.textContent = t("buttons.deleteModule");
     if (!slot.removable && !headerEl.querySelector(".default-slot-badge")) {
       const badge = document.createElement("span");
       badge.className = "default-slot-badge";
-      badge.textContent = "默认模块";
       headerEl.appendChild(badge);
     }
+    const defaultBadge = headerEl.querySelector(".default-slot-badge");
+    if (defaultBadge) defaultBadge.textContent = t("labels.defaultModule");
     if (deleteEl) deleteEl.disabled = projectState.isRolling;
 
     const used = slot.rerollCount || projectState.rerollCounts[slot.id] || 0;
     const remaining = Math.max(0, projectState.maxRerolls - used);
-    countEl.textContent = remaining > 0 ? `剩余重抽 ${remaining} 次` : "重抽次数已用完";
+    countEl.textContent = remaining > 0 ? t("track.remaining", { count: remaining }) : t("track.rerollUsedUp");
 
     const canReroll = projectState.hasGeneratedProject && !projectState.isRolling && remaining > 0;
     buttonEl.disabled = !canReroll;
-    buttonEl.textContent = projectState.isRolling ? "重抽中…" : (remaining > 0 ? "重抽" : "已用完");
+    buttonEl.textContent = projectState.isRolling ? t("buttons.rerolling") : (remaining > 0 ? t("buttons.reroll") : t("buttons.usedUp"));
 
     if (addSlotEl) {
       const categoryCount = projectState.slots.filter((item) => item.category === slot.category).length;
       const isFull = projectState.slots.length >= maxModuleSlots;
       const isLimit = categoryCount >= 3;
       addSlotEl.disabled = projectState.isRolling || isFull || isLimit;
-      addSlotEl.textContent = isFull ? "模块数已满" : (isLimit ? "已达上限" : `+ 添加${getBaseModule(slot.category).label}`);
+      addSlotEl.textContent = isFull
+        ? t("buttons.moduleFull")
+        : (isLimit ? t("buttons.limitReached") : t("buttons.addSameModule"));
     }
   });
 }
@@ -1004,7 +1608,7 @@ function startDraw() {
   promptBox.classList.add("hidden");
   readmePreview.classList.add("hidden");
   startBtn.disabled = true;
-  startBtn.textContent = "抽奖中...";
+  startBtn.textContent = t("buttons.drawing");
   statusText.textContent = "6 条模块轨道已同时启动，正在依次停靠...";
 
   trackStates = createTrackStates();
@@ -1024,7 +1628,10 @@ function handleModeClick(event) {
   modeGrid.querySelectorAll(".mode-button").forEach((item) => {
     item.classList.toggle("active", item === button);
   });
-  statusText.textContent = `当前方向：${projectModes[selectedModeKey].label}；策略：${getStrategyLabel()}。点击开始抽奖后，相关硬件出现概率会提高。`;
+  statusText.textContent = t("status.modeChanged", {
+    mode: t(`mode.${selectedModeKey}`),
+    strategy: getStrategyLabel()
+  });
 }
 
 function handleStrategyClick(event) {
@@ -1034,7 +1641,10 @@ function handleStrategyClick(event) {
   strategySwitch.querySelectorAll(".strategy-button").forEach((item) => {
     item.classList.toggle("active", item === button);
   });
-  statusText.textContent = `当前方向：${projectModes[selectedModeKey].label}；策略：${getStrategyLabel()}。`;
+  statusText.textContent = t("status.strategyChanged", {
+    mode: t(`mode.${selectedModeKey}`),
+    strategy: getStrategyLabel()
+  });
 }
 
 function handleCollapsibleClick(event) {
@@ -1053,11 +1663,15 @@ function handleCollapsibleClick(event) {
 function togglePoolOverview() {
   poolOverviewVisible = !poolOverviewVisible;
   poolOverview.classList.toggle("hidden", !poolOverviewVisible);
-  poolToggleBtn.textContent = poolOverviewVisible ? "收起奖池" : "查看奖池";
+  updatePoolToggleText();
   poolToggleBtn.setAttribute("aria-expanded", String(poolOverviewVisible));
   if (poolOverviewVisible) {
     renderPoolOverview();
   }
+}
+
+function updatePoolToggleText() {
+  if (poolToggleBtn) poolToggleBtn.textContent = poolOverviewVisible ? t("buttons.poolClose") : t("buttons.poolOpen");
 }
 
 function handlePoolRarityFilterClick(event) {
@@ -1131,7 +1745,7 @@ function renderPoolItem(item) {
   return `
     <div class="pool-item ${item.rarity}">
       <div class="pool-item-main">
-        <strong>${item.name}</strong>
+        <strong>${getPartName(item)}</strong>
         <span>${getRarityLabel(item.rarity)}</span>
       </div>
       <div class="pool-item-meta">
@@ -1139,7 +1753,7 @@ function renderPoolItem(item) {
         <span>${formatInterface(item.interface)}</span>
         <span>${getDifficultyLabel(item.difficulty)}</span>
       </div>
-      <p>${item.notes}</p>
+      <p>${getPartNotes(item)}</p>
     </div>
   `;
 }
@@ -1204,12 +1818,7 @@ function countPoolRarities(items) {
 }
 
 function getRarityLabel(rarity) {
-  const labels = {
-    blue: "蓝色 普通入门",
-    pink: "粉色 进阶实用",
-    gold: "金色 高级展示"
-  };
-  return labels[rarity] || rarity;
+  return t(`rarityLabel.${rarity}`) || rarity;
 }
 
 function getDifficultyLabel(difficulty) {
@@ -1219,6 +1828,104 @@ function getDifficultyLabel(difficulty) {
     hard: "较难"
   };
   return labels[difficulty] || difficulty || "未知";
+}
+
+function renderCategoryPool(categoryKey, visibleItems) {
+  const module = modulePools.find((item) => item.key === categoryKey);
+  const isCollapsed = collapsedPoolCategories.has(categoryKey);
+  const moduleItems = visibleItems.filter((item) => item.moduleKey === categoryKey);
+  const totalCount = getPoolItemsForModule(module).length;
+  const visibleCount = moduleItems.length;
+
+  return `
+    <article class="pool-category-card ${isCollapsed ? "collapsed" : ""}">
+      <button class="pool-category-header" type="button" data-pool-category="${categoryKey}" aria-expanded="${String(!isCollapsed)}">
+        <span>
+          <strong>${getModuleLabel(categoryKey)}</strong>
+          <small>${visibleCount}/${t("pool.itemCount", { count: totalCount })}</small>
+        </span>
+        <span class="pool-collapse-icon">${isCollapsed ? t("pool.expand") : t("pool.collapse")}</span>
+      </button>
+      <div class="pool-category-body">
+        ${["blue", "pink", "gold"].map((rarity) => renderPoolRaritySection(moduleItems, rarity)).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function renderPoolRaritySection(items, rarity) {
+  const rarityItems = items.filter((item) => item.rarity === rarity);
+  return `
+    <section class="pool-rarity-section ${rarity}">
+      <h3>${getRarityLabel(rarity)} <span>${t("pool.count", { count: rarityItems.length })}</span></h3>
+      <div class="pool-item-list">
+        ${rarityItems.length > 0
+          ? rarityItems.map(renderPoolItem).join("")
+          : `<div class="pool-empty">${t("pool.empty")}</div>`}
+      </div>
+    </section>
+  `;
+}
+
+function filterPoolItems(items = getAllPoolItems()) {
+  const keyword = poolSearchInput.value.trim().toLowerCase();
+  return items.filter((item) => {
+    const rarityMatched = poolRarityFilter === "all" || item.rarity === poolRarityFilter;
+    const haystack = [
+      item.name,
+      item.nameEn,
+      item.category,
+      getModuleLabel(item.moduleKey),
+      getRarityLabel(item.rarity),
+      item.voltage,
+      formatInterface(item.interface),
+      item.powerLevel,
+      item.difficulty,
+      getDifficultyLabel(item.difficulty),
+      item.notes,
+      item.notesEn,
+      (item.alternatives || []).join(" "),
+      (item.alternativesEn || []).join(" ")
+    ].join(" ").toLowerCase();
+    const keywordMatched = !keyword || haystack.includes(keyword);
+    return rarityMatched && keywordMatched;
+  });
+}
+
+function renderPoolStats(allItems, visibleItems) {
+  const rarityTotals = countPoolRarities(allItems);
+  const visibleTotals = countPoolRarities(visibleItems);
+  const moduleStats = modulePools.map((module) => {
+    const count = allItems.filter((item) => item.moduleKey === module.key).length;
+    return t("pool.moduleStat", { label: getModuleLabel(module.key), count });
+  }).join(" · ");
+
+  poolStats.innerHTML = `
+    <div class="pool-stat-line">
+      <strong>${t("pool.total", { count: allItems.length })}</strong>
+      <span>${t("pool.rarityTotals", rarityTotals)}</span>
+      <span>${t("pool.visibleTotals", {
+        total: visibleItems.length,
+        blue: visibleTotals.blue,
+        pink: visibleTotals.pink,
+        gold: visibleTotals.gold
+      })}</span>
+    </div>
+    <div class="pool-module-stats">${moduleStats}</div>
+  `;
+}
+
+function getDifficultyLabel(difficulty) {
+  const labels = {
+    easy: t("difficulty.easy"),
+    medium: t("difficulty.medium"),
+    hard: t("difficulty.hard"),
+    "入门": t("difficulty.easy"),
+    "中等": t("difficulty.medium"),
+    "中等偏上": t("difficulty.upper"),
+    "较难": t("difficulty.hard")
+  };
+  return labels[difficulty] || difficulty || t("difficulty.unknown");
 }
 
 function favoriteCurrentProject() {
@@ -1277,6 +1984,9 @@ function importProjectJson(event) {
   reader.onload = () => {
     try {
       const parsed = JSON.parse(String(reader.result));
+      if (parsed && (parsed.language === "zh" || parsed.language === "en")) {
+        setLanguage(parsed.language);
+      }
       const project = parseImportedProject(parsed);
       generatedProject = project;
       setProjectStateFromProject(generatedProject);
@@ -1298,6 +2008,7 @@ function buildExportPayload(project) {
   return {
     schema: "mcu-lootbox-project",
     version: 1,
+    language: currentLang,
     exportedAt: new Date().toISOString(),
     project: {
       name: project.name,
@@ -1502,6 +2213,7 @@ function createHardwareItem(module, context = {}) {
     categoryKey,
     moduleLabel: module.label,
     name,
+    nameEn: hardware.nameEn || metaInfo.nameEn || inferEnglishPartName(name),
     rarityKey,
     rarityLabel: rarityConfig[rarityKey].label,
     rarityTitle: rarityConfig[rarityKey].title,
@@ -1510,7 +2222,9 @@ function createHardwareItem(module, context = {}) {
     powerLevel: metaInfo.powerLevel,
     difficulty: metaInfo.difficulty,
     notes: metaInfo.notes,
-    alternatives: metaInfo.alternatives
+    notesEn: metaInfo.notesEn || getEnglishNotes(categoryKey),
+    alternatives: metaInfo.alternatives,
+    alternativesEn: metaInfo.alternativesEn || getDefaultAlternativesEn(categoryKey)
   };
 }
 
@@ -1519,7 +2233,7 @@ function renderTracks(states) {
     <div class="module-track" data-module-key="${state.module.key}">
       <div class="module-name">
         <strong>${state.module.label}</strong>
-        <span>滚动中</span>
+        <span>${t("track.rolling")}</span>
       </div>
       <div class="track-window">
         <div class="track-pointer" aria-hidden="true"></div>
@@ -1536,8 +2250,8 @@ function renderHardwareCard(item, index) {
   const config = rarityConfig[item.rarityKey];
   return `
     <article class="hardware-card ${config.className}" data-item-index="${index}">
-      <span class="badge ${config.colorClass}">${item.rarityLabel}</span>
-      <strong>${item.name}</strong>
+      <span class="badge ${config.colorClass}">${getRarityLabel(item.rarityKey)}</span>
+      <strong>${getPartName(item)}</strong>
     </article>
   `;
 }
@@ -1596,8 +2310,8 @@ function stopTrack(state) {
 
   stripEl.style.transform = `translateX(${state.targetX}px)`;
   winnerEl.classList.add("winner");
-  labelEl.textContent = `抽中：${state.winner.rarityLabel} ${state.winner.name}`;
-  statusText.textContent = `${state.module.label} 已停靠：${state.winner.name}`;
+  labelEl.textContent = `抽中：${getRarityLabel(state.winner.rarityKey)} ${getPartName(state.winner)}`;
+  statusText.textContent = `${state.module.label} 已停靠：${getPartName(state.winner)}`;
   playStopSound(state.winner.rarityKey);
   updateRerollControls();
 }
@@ -1617,7 +2331,7 @@ function finishAllTracks() {
   resultSection.classList.remove("hidden");
   statusText.textContent = "项目生成完成。";
   setRollingState(false);
-  startBtn.textContent = "重新开始抽奖";
+  startBtn.textContent = t("buttons.restart");
   playCompleteSound();
 }
 
@@ -1655,7 +2369,7 @@ function rerollModule(slotId) {
   initAudio();
   stopTickLoop();
   setRollingState(true);
-  startBtn.textContent = "重抽中…";
+  startBtn.textContent = t("buttons.rerolling");
   statusText.textContent = `${module.label} 正在单模块重抽…`;
 
   const context = createContextFromSlots();
@@ -1682,7 +2396,7 @@ function renderSingleTrackState(state) {
   const labelEl = trackEl.querySelector(".track-result") || trackEl.querySelector(".module-name span");
   stripEl.innerHTML = state.items.map((item, index) => renderHardwareCard(item, index)).join("");
   stripEl.style.transform = "translateX(0)";
-  if (labelEl) labelEl.textContent = "重抽中…";
+  if (labelEl) labelEl.textContent = t("buttons.rerolling");
   trackEl.classList.remove("reroll-updated");
 }
 
@@ -1732,8 +2446,8 @@ function finishSingleReroll(state) {
   readmePreview.classList.add("hidden");
   resultSection.classList.remove("hidden");
   setRollingState(false);
-  startBtn.textContent = "重新开始抽奖";
-  statusText.textContent = `${state.module.label} 已重抽完成：${state.winner.name}`;
+  startBtn.textContent = t("buttons.restart");
+  statusText.textContent = `${state.module.label} 已重抽完成：${getPartName(state.winner)}`;
   const trackEl = getTrackElement(state.module.key);
   trackEl.classList.add("reroll-updated");
   window.setTimeout(() => trackEl.classList.remove("reroll-updated"), 900);
@@ -2249,7 +2963,7 @@ function generateStm32F103PinPlan(project) {
 function createPinRow(item, interfaceName, pins, note) {
   return {
     module: item.moduleLabel,
-    device: item.name,
+    device: getPartName(item),
     interface: interfaceName,
     pins,
     note
@@ -2285,19 +2999,30 @@ function needsInterface(item, interfaceName) {
 function createBomItem(category, item, required) {
   return {
     category,
+    categoryEn: i18n.en[`module.${item.categoryKey || item.moduleKey || normalizeCategoryKey(category)}`] || category,
     name: item.name,
+    nameEn: item.nameEn || inferEnglishPartName(item.name),
     quantity: "1 个",
     interface: item.interface,
     voltage: item.voltage,
     keywords: getPurchaseKeywords(item),
     required,
     alternatives: getAlternatives(item),
-    notes: item.notes
+    alternativesEn: item.alternativesEn || getDefaultAlternativesEn(item.categoryKey || item.moduleKey),
+    notes: item.notes,
+    notesEn: item.notesEn || getEnglishNotes(item)
   };
 }
 
 function getPurchaseKeywords(item) {
-  const suffixMap = {
+  const suffixMap = currentLang === "en" ? {
+    controller: "development board minimum system",
+    sensor: "sensor module breakout",
+    display: "display module screen",
+    communication: "communication module",
+    storage: "storage module",
+    actuator: "driver output module"
+  } : {
     controller: "开发板 最小系统板",
     sensor: "传感器 模块",
     display: "显示模块 屏幕",
@@ -2305,10 +3030,12 @@ function getPurchaseKeywords(item) {
     storage: "存储模块",
     actuator: "驱动 输出模块"
   };
-  return `${item.name} ${suffixMap[item.moduleKey] || "模块"}`;
+  return `${getPartName(item)} ${suffixMap[item.moduleKey] || "模块"}`;
 }
 
 function getAlternatives(item) {
+  const explicit = getPartAlternatives(item);
+  if (explicit.length > 0) return explicit.join(currentLang === "en" ? ", " : "、");
   const alternatives = {
     controller: "同系列 STM32 / ESP32 / RP2040 开发板",
     sensor: "同接口、同电压等级的同类传感器",
@@ -2385,7 +3112,7 @@ function isEasyBuildSet(project) {
 }
 
 function getStrategyLabel() {
-  return selectedStrategy === "realistic" ? "真实可做优先模式" : "随机娱乐模式";
+  return selectedStrategy === "realistic" ? t("strategy.realistic") : t("strategy.fun");
 }
 
 function renderProjectResult(project) {
@@ -2595,15 +3322,201 @@ function renderPinRow(row) {
 function renderBomRow(item) {
   return `
     <tr>
-      <td>${item.category}</td>
-      <td>${item.name}</td>
+      <td>${currentLang === "en" ? (item.categoryEn || item.category) : item.category}</td>
+      <td>${getPartName(item)}</td>
       <td>${item.quantity}</td>
       <td>${formatInterface(item.interface)}</td>
       <td>${item.voltage}</td>
       <td>${item.keywords}</td>
       <td>${item.required ? "是" : "否"}</td>
       <td>${item.alternatives}</td>
-      <td>${item.notes}</td>
+      <td>${getPartNotes(item)}</td>
+    </tr>
+  `;
+}
+
+function renderProjectResult(project) {
+  const slots = getProjectSlots(project).filter((slot) => slot.selectedPart);
+  projectResult.innerHTML = `
+    <h3>${project.name}</h3>
+    <div class="summary-grid">
+      <div class="summary-box"><span>${t("result.direction")}</span><strong>${project.modeLabel}</strong></div>
+      <div class="summary-box"><span>${t("result.strategy")}</span><strong>${project.strategyLabel || getStrategyLabel()}</strong></div>
+      <div class="summary-box"><span>${t("result.projectDifficulty")}</span><strong>${getDifficultyLabel(project.difficulty)}</strong></div>
+      <div class="summary-box"><span>${t("result.score")}</span><strong>${project.score}</strong></div>
+    </div>
+    <table class="result-table">
+      <thead>
+        <tr>
+          <th>${t("table.slot")}</th>
+          <th>${t("table.category")}</th>
+          <th>${t("table.part")}</th>
+          <th>${t("table.rarity")}</th>
+          <th>${t("table.interface")}</th>
+          <th>${t("table.voltage")}</th>
+          <th>${t("table.difficulty")}</th>
+          <th>${t("table.notes")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${slots.map(renderProjectSlotRow).join("")}
+      </tbody>
+    </table>
+    <table class="result-table">
+      <tbody>
+        <tr><th>${t("result.projectName")}</th><td>${project.name}</td></tr>
+        <tr><th>${t("result.description")}</th><td>${project.description}</td></tr>
+        <tr><th>${t("result.applications")}</th><td>${project.applications}</td></tr>
+        <tr><th>${t("result.extensions")}</th><td>${project.extensions}</td></tr>
+      </tbody>
+    </table>
+    ${renderCompatibility(project.compatibility)}
+    ${renderPinPlan(project.pinPlan)}
+    ${renderRoadmap(project.roadmap)}
+    ${renderBom(project.bom)}
+  `;
+}
+
+function renderProjectSlotRow(slot) {
+  const item = slot.selectedPart;
+  const rarityKey = item.rarityKey || item.rarity;
+  const categoryLabel = getModuleLabel(slot.category);
+  const slotIndex = Number((slot.id || "").split("_").pop()) || 1;
+  const slotLabel = getSlotLabel(slot.category, slotIndex);
+  return `
+    <tr>
+      <td>${slotLabel}</td>
+      <td>${categoryLabel}</td>
+      <td>${getPartName(item)}</td>
+      <td><span class="badge ${rarityKey || ""}">${getRarityLabel(rarityKey)}</span></td>
+      <td>${formatInterface(item.interface)}</td>
+      <td>${item.voltage}</td>
+      <td>${getDifficultyLabel(item.difficulty)}</td>
+      <td>${getPartNotes(item)}</td>
+    </tr>
+  `;
+}
+
+function getCompatibilityStatusLabel(status) {
+  if (status === "red") return t("compatibility.red");
+  if (status === "yellow") return t("compatibility.yellow");
+  return t("compatibility.green");
+}
+
+function renderCompatibility(compatibility) {
+  return `
+    <section class="compatibility-panel compatibility-${compatibility.status}">
+      <div class="compatibility-head">
+        <span class="compatibility-dot"></span>
+        <div>
+          <h4>${t("compatibility.title")}：${getCompatibilityStatusLabel(compatibility.status)}</h4>
+          <p>${compatibility.summary}</p>
+        </div>
+      </div>
+      ${renderCompatibilityGroup(t("compatibility.red"), compatibility.risks, "risk")}
+      ${renderCompatibilityGroup(t("compatibility.yellow"), compatibility.warnings, "warning")}
+      ${renderCompatibilityGroup(t("compatibility.green"), compatibility.passes, "pass")}
+    </section>
+  `;
+}
+
+function renderBom(bomItems) {
+  return `
+    <section class="bom-panel collapsible-panel">
+      <button class="collapsible-trigger" type="button" aria-expanded="true">
+        <span>${t("bom.title")}</span>
+        <span class="collapse-icon">${t("common.collapse")}</span>
+      </button>
+      <div class="collapsible-content">
+        <div class="bom-head">
+          <p>${t("bom.description")}</p>
+        </div>
+        <div class="bom-scroll">
+          <table class="bom-table">
+            <thead>
+              <tr>
+                <th>${t("bom.category")}</th>
+                <th>${t("bom.part")}</th>
+                <th>${t("bom.quantity")}</th>
+                <th>${t("bom.interface")}</th>
+                <th>${t("bom.voltage")}</th>
+                <th>${t("bom.keywords")}</th>
+                <th>${t("bom.required")}</th>
+                <th>${t("bom.alternatives")}</th>
+                <th>${t("bom.notes")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bomItems.map(renderBomRow).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderPinPlan(pinPlan) {
+  if (!pinPlan) return "";
+  return `
+    <section class="pin-panel collapsible-panel">
+      <button class="collapsible-trigger" type="button" aria-expanded="true">
+        <span>${t("pin.title")}</span>
+        <span class="collapse-icon">${t("common.collapse")}</span>
+      </button>
+      <div class="collapsible-content">
+        <div class="pin-head">
+          <p>${t("pin.description")}</p>
+        </div>
+        <div class="pin-scroll">
+          <table class="pin-table">
+            <thead>
+              <tr>
+                <th>${t("pin.module")}</th>
+                <th>${t("pin.interface")}</th>
+                <th>${t("pin.pins")}</th>
+                <th>${t("pin.notes")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pinPlan.rows.map(renderPinRow).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div class="pin-notes">
+          <strong>${t("pin.notes")}</strong>
+          <ul>
+            ${pinPlan.notes.map((note) => `<li>${note}</li>`).join("")}
+          </ul>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderPinRow(row) {
+  return `
+    <tr>
+      <td>${row.module}${row.device ? ` / ${row.device}` : ""}</td>
+      <td>${row.interface}</td>
+      <td>${row.pins}</td>
+      <td>${row.note}</td>
+    </tr>
+  `;
+}
+
+function renderBomRow(item) {
+  return `
+    <tr>
+      <td>${currentLang === "en" ? (item.categoryEn || item.category) : item.category}</td>
+      <td>${getPartName(item)}</td>
+      <td>${item.quantity}</td>
+      <td>${formatInterface(item.interface)}</td>
+      <td>${item.voltage}</td>
+      <td>${item.keywords}</td>
+      <td>${item.required ? t("bom.yes") : t("bom.no")}</td>
+      <td>${getPartAlternatives(item).join(currentLang === "en" ? ", " : "、") || item.alternatives}</td>
+      <td>${getPartNotes(item)}</td>
     </tr>
   `;
 }
@@ -2637,7 +3550,7 @@ function toggleSound() {
 }
 
 function updateSoundButton() {
-  soundToggleBtn.textContent = soundEnabled ? "音效：开启" : "音效：关闭";
+  soundToggleBtn.textContent = soundEnabled ? t("sound.on") : t("sound.off");
   soundToggleBtn.classList.toggle("sound-on", soundEnabled);
   soundToggleBtn.classList.toggle("sound-off", !soundEnabled);
 }
@@ -2970,6 +3883,451 @@ ${project.extensions.split("。").filter(Boolean).map((item) => `- ${item}。`).
 本 README 由 MCU LootBox 根据随机硬件组合自动生成，仅作为学习和项目灵感参考。实际制作前需要检查电压、电流、接口、电平兼容性、封装、供应链和器件资料手册。因硬件版本差异、模块商家设计差异或接线错误造成的问题，需要制作者自行核对和承担。`;
 }
 
+function getExportPartRows(project) {
+  return getProjectSlots(project)
+    .filter((slot) => slot.selectedPart)
+    .map((slot) => {
+      const item = slot.selectedPart;
+      const slotIndex = Number((slot.id || "").split("_").pop()) || 1;
+      return {
+        slot: getSlotLabel(slot.category, slotIndex),
+        category: getModuleLabel(slot.category),
+        part: getPartName(item),
+        rarity: getRarityLabel(item.rarityKey || item.rarity),
+        interfaceText: formatInterface(item.interface),
+        voltage: item.voltage,
+        difficulty: getDifficultyLabel(item.difficulty),
+        notes: getPartNotes(item)
+      };
+    });
+}
+
+function getExportDescription(project) {
+  if (currentLang !== "en") return project.description;
+  const { controller, sensor, display, communication, storage, actuator } = project.hardware;
+  return `This project is based on ${getPartName(controller)}. It uses ${getPartName(sensor)} for data collection, ${getPartName(display)} for display or interaction, ${getPartName(communication)} for communication or debugging, ${getPartName(storage)} for configuration or logs, and ${getPartName(actuator)} for alerts, driving, or output actions. It is suitable as an embedded learning project, prototype, or open-source hardware idea.`;
+}
+
+function getExportApplications(project) {
+  if (currentLang !== "en") return project.applications;
+  return "Embedded course design, desktop monitoring tools, IoT prototypes, data logging demos, and hardware integration practice.";
+}
+
+function getExportExtensions(project) {
+  if (currentLang !== "en") return project.extensions;
+  return "Add enclosure and PCB design, improve power protection, add configuration menus, create automated tests, and publish complete open-source documentation.";
+}
+
+function buildMarkdown(project) {
+  const rows = getExportPartRows(project).map((row) => {
+    return `| ${row.slot} | ${row.category} | ${row.part} | ${row.rarity} | ${row.interfaceText} | ${row.voltage} | ${row.difficulty} | ${row.notes} |`;
+  }).join("\n");
+
+  if (currentLang === "en") {
+    return `# ${project.name}
+
+## Project Table
+
+| Slot | Category | Part | Rarity | Interface | Voltage | Difficulty | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}
+
+## Summary
+
+| Item | Content |
+| --- | --- |
+| Direction | ${project.modeLabel} |
+| Strategy | ${project.strategyLabel || getStrategyLabel()} |
+| Project Difficulty | ${getDifficultyLabel(project.difficulty)} |
+| Value Score | ${project.score} |
+| Description | ${getExportDescription(project)} |
+| Recommended Applications | ${getExportApplications(project)} |
+| Future Extensions | ${getExportExtensions(project)} |
+
+${formatCompatibilityMarkdown(project.compatibility)}
+
+${formatPinPlanMarkdown(project.pinPlan)}
+
+${buildRoadmapMarkdown(project)}
+
+${buildBomMarkdown(project)}
+
+## Disclaimer
+
+This project is generated as a learning and ideation aid. The hardware combination is only a reference. Before building, check voltage, current, interfaces, logic-level compatibility, package, supply chain, and component datasheets.`;
+  }
+
+  return `# ${project.name}
+
+## 项目表
+
+| 槽位 | 分类 | 硬件 | 稀有度 | 接口 | 工作电压 | 难度 | 备注 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}
+
+## 项目摘要
+
+| 项目 | 内容 |
+| --- | --- |
+| 项目方向 | ${project.modeLabel} |
+| 抽取策略 | ${project.strategyLabel || getStrategyLabel()} |
+| 项目难度 | ${getDifficultyLabel(project.difficulty)} |
+| 含金量评分 | ${project.score} |
+| 项目简介 | ${getExportDescription(project)} |
+| 推荐应用方向 | ${getExportApplications(project)} |
+| 后续扩展建议 | ${getExportExtensions(project)} |
+
+${formatCompatibilityMarkdown(project.compatibility)}
+
+${formatPinPlanMarkdown(project.pinPlan)}
+
+${buildRoadmapMarkdown(project)}
+
+${buildBomMarkdown(project)}
+
+## 免责声明
+
+本项目为学习和创意生成工具，硬件组合仅作为项目灵感参考，实际制作前需要检查电压、电流、接口、电平兼容性、封装、供应链和器件资料手册。`;
+}
+
+function buildBomMarkdown(project) {
+  const separator = currentLang === "en" ? ", " : "、";
+  const rows = project.bom.map((item) => {
+    const category = currentLang === "en" ? (item.categoryEn || item.category) : item.category;
+    const alternatives = getPartAlternatives(item).join(separator) || item.alternatives;
+    const keywords = currentLang === "en" ? `${getPartName(item)} module` : item.keywords;
+    return `| ${category} | ${getPartName(item)} | ${item.quantity} | ${formatInterface(item.interface)} | ${item.voltage} | ${keywords} | ${item.required ? t("bom.yes") : t("bom.no")} | ${alternatives} | ${getPartNotes(item)} |`;
+  }).join("\n");
+
+  if (currentLang === "en") {
+    return `## BOM
+
+| Category | Part | Quantity | Interface | Voltage | Keywords | Required | Alternatives | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}`;
+  }
+
+  return `## BOM 清单
+
+| 模块类别 | 器件名称 | 数量 | 接口类型 | 工作电压 | 常见购买关键词 | 是否必须 | 可替代器件 | 备注 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+${rows}`;
+}
+
+function buildRoadmapMarkdown(project) {
+  const stages = project.roadmap || generateRoadmap(project);
+  if (currentLang === "en") {
+    return `## Development Roadmap
+
+${stages.map((stage, index) => `### ${index + 1}. ${stage.title}
+
+- Goal: ${stage.target}
+- Test Method: ${stage.test}
+- Success Criteria: ${stage.success}`).join("\n\n")}`;
+  }
+
+  return `## 项目开发路线图
+
+${stages.map((stage, index) => `### ${index + 1}. ${stage.title}
+
+- 目标：${stage.target}
+- 测试方法：${stage.test}
+- 成功标准：${stage.success}`).join("\n\n")}`;
+}
+
+function formatPinPlanMarkdown(pinPlan) {
+  if (!pinPlan) {
+    return currentLang === "en"
+      ? `## STM32 Pin Suggestions
+
+The selected MCU is not STM32F103C8T6, so the default STM32F103C8T6 pin table was not generated.`
+      : `## STM32 接线建议
+
+本次主控不是 STM32F103C8T6，因此未生成 STM32F103C8T6 默认接线表。`;
+  }
+
+  const rows = pinPlan.rows.map((row) => {
+    return currentLang === "en"
+      ? `| ${row.module}${row.device ? ` / ${row.device}` : ""} | ${row.interface} | ${row.pins} | ${row.note} |`
+      : `| ${row.module}${row.device ? ` / ${row.device}` : ""} | ${row.interface} | ${row.pins} | ${row.note} |`;
+  }).join("\n");
+
+  if (currentLang === "en") {
+    return `## STM32 Pin Suggestions
+
+| Module | Interface | Suggested Pins | Notes |
+| --- | --- | --- | --- |
+${rows}
+
+### Wiring Notes
+
+${pinPlan.notes.map((note) => `- ${note}`).join("\n")}`;
+  }
+
+  return `## STM32 接线建议
+
+| 模块 | 接口 | 推荐引脚 | 说明 |
+| --- | --- | --- | --- |
+${rows}
+
+### 接线提示
+
+${pinPlan.notes.map((note) => `- ${note}`).join("\n")}`;
+}
+
+function formatCompatibilityMarkdown(compatibility) {
+  const lines = currentLang === "en"
+    ? [`## Compatibility Analysis`, ``, `Conclusion: ${getCompatibilityStatusLabel(compatibility.status)}`, ``, compatibility.summary, ``]
+    : [`## 兼容性分析`, ``, `结论：${getCompatibilityStatusLabel(compatibility.status)}`, ``, compatibility.summary, ``];
+
+  if (compatibility.risks.length > 0) {
+    lines.push(`### ${t("compatibility.red")}`, ...compatibility.risks.map((item) => `- ${item}`), ``);
+  }
+  if (compatibility.warnings.length > 0) {
+    lines.push(`### ${t("compatibility.yellow")}`, ...compatibility.warnings.map((item) => `- ${item}`), ``);
+  }
+  if (compatibility.passes.length > 0) {
+    lines.push(`### ${t("compatibility.green")}`, ...compatibility.passes.map((item) => `- ${item}`), ``);
+  }
+
+  return lines.join("\n");
+}
+
+function buildCodexPrompt(project) {
+  const rows = getExportPartRows(project).map((row) => `- ${row.slot}: ${row.part} (${row.rarity}, ${row.interfaceText}, ${row.voltage})`).join("\n");
+
+  if (currentLang === "en") {
+    return `Please design a realistic embedded project plan based on the following hardware combination.
+
+Requirements:
+1. Feature planning
+2. Hardware wiring suggestions and electrical compatibility notes
+3. Firmware code module structure
+4. Key driver and application logic ideas
+5. README.md documentation structure
+6. Test steps
+7. Future extension directions
+8. A pre-build checklist for voltage, current, interfaces, logic levels, package, supply chain, and datasheets
+
+Project name: ${project.name}
+Direction: ${project.modeLabel}
+Strategy: ${project.strategyLabel || getStrategyLabel()}
+Difficulty: ${getDifficultyLabel(project.difficulty)}
+Value score: ${project.score}
+
+Hardware:
+${rows}
+
+Compatibility conclusion: ${getCompatibilityStatusLabel(project.compatibility.status)}
+Compatibility notes: ${project.compatibility.summary}
+
+Project description:
+${getExportDescription(project)}`;
+  }
+
+  return `请基于以下硬件组合，为我设计一个真实可实现的 STM32/嵌入式项目方案。
+
+要求包括：
+1. 功能规划
+2. 硬件连接建议和电气兼容性注意事项
+3. 固件代码模块结构
+4. 关键驱动和业务逻辑实现思路
+5. README.md 文档结构
+6. 测试步骤
+7. 后续扩展方向
+8. 制作前需要核对的电压、电流、接口、电平兼容性、封装、供应链和资料手册清单
+
+项目名称：${project.name}
+项目方向：${project.modeLabel}
+抽取策略：${project.strategyLabel || getStrategyLabel()}
+项目难度：${getDifficultyLabel(project.difficulty)}
+含金量评分：${project.score}
+
+硬件组合：
+${rows}
+
+兼容性结论：${getCompatibilityStatusLabel(project.compatibility.status)}
+兼容性说明：${project.compatibility.summary}
+
+项目简介：
+${getExportDescription(project)}`;
+}
+
+function buildFullReadme(project) {
+  const rows = getExportPartRows(project).map((row) => {
+    return `| ${row.category} | ${row.part} | ${row.rarity} | ${row.interfaceText} | ${row.voltage} | ${row.notes} |`;
+  }).join("\n");
+
+  if (currentLang === "en") {
+    return `# ${project.name}
+
+## Project Overview
+
+${getExportDescription(project)}
+
+Direction: **${project.modeLabel}**  
+Strategy: **${project.strategyLabel || getStrategyLabel()}**  
+Difficulty: **${getDifficultyLabel(project.difficulty)}**  
+Value score: **${project.score}/100**
+
+## Features
+
+- Collect data with the selected sensor module.
+- Show status or provide interaction through the display/UI module.
+- Communicate, debug, or connect remotely through the communication module.
+- Store parameters, logs, or historical data when storage is available.
+- Drive alerts, motors, relays, or other output actions through the actuator module.
+
+## Application Scenarios
+
+${getExportApplications(project)}
+
+## Hardware
+
+| Category | Part | Rarity | Interface | Voltage | Notes |
+| --- | --- | --- | --- | --- | --- |
+${rows}
+
+${buildBomMarkdown(project)}
+
+${formatPinPlanMarkdown(project.pinPlan)}
+
+${formatCompatibilityMarkdown(project.compatibility)}
+
+${buildRoadmapMarkdown(project)}
+
+## Suggested Firmware Structure
+
+\`\`\`text
+firmware/
+  Core/
+  Drivers/
+  App/
+  BSP/
+docs/
+  wiring.md
+  test-plan.md
+README.md
+\`\`\`
+
+## Usage
+
+1. Prepare modules according to the hardware and wiring tables.
+2. Check voltage, logic level, current demand, and pin definitions.
+3. Bring up the MCU with a minimal LED or UART test.
+4. Integrate each module one by one.
+5. Run integrated tests and document known risks.
+
+## Test Steps
+
+1. Power test.
+2. MCU flashing and UART log test.
+3. Sensor readout test.
+4. Display/UI test.
+5. Communication test.
+6. Storage read/write test.
+7. Output/actuator safety test.
+8. Long-running integration test.
+
+## Future Extensions
+
+${getExportExtensions(project)}
+
+## Notes
+
+- Check every module datasheet before wiring.
+- Use level shifting when 3.3V logic talks to 5V logic.
+- High-current modules should use external power and common ground.
+- Validate modules individually before full integration.
+
+## Disclaimer
+
+This README is automatically generated by MCU LootBox for learning and project ideation. Verify voltage, current, interface, logic-level compatibility, package, supply chain, and component datasheets before building.`;
+  }
+
+  return `# ${project.name}
+
+## 项目简介
+
+${getExportDescription(project)}
+
+本项目方向为 **${project.modeLabel}**，抽取策略为 **${project.strategyLabel || getStrategyLabel()}**，项目难度评估为 **${getDifficultyLabel(project.difficulty)}**，含金量评分为 **${project.score}/100**。
+
+## 功能特点
+
+- 使用抽到的感知模块采集关键数据。
+- 通过显示交互模块展示状态或进行人机交互。
+- 通过通信模块实现调试、联网或远程控制。
+- 根据存储模块保存参数、日志或历史数据。
+- 使用执行器/输出模块实现提醒、驱动或执行动作。
+
+## 应用场景
+
+${getExportApplications(project)}
+
+## 硬件组成
+
+| 模块类别 | 器件 | 稀有度 | 接口 | 工作电压 | 注意事项 |
+| --- | --- | --- | --- | --- | --- |
+${rows}
+
+${buildBomMarkdown(project)}
+
+${formatPinPlanMarkdown(project.pinPlan)}
+
+${formatCompatibilityMarkdown(project.compatibility)}
+
+${buildRoadmapMarkdown(project)}
+
+## 软件模块结构建议
+
+\`\`\`text
+firmware/
+  Core/
+  Drivers/
+  App/
+  BSP/
+docs/
+  wiring.md
+  test-plan.md
+README.md
+\`\`\`
+
+## 使用方法
+
+1. 按照硬件组成和接线建议准备模块。
+2. 核对所有模块的工作电压、接口电平和供电能力。
+3. 先单独跑通主控点灯和串口日志。
+4. 依次接入各个模块，并在固件中启用对应驱动。
+5. 完成整体联调后，再整理外壳、供电和长期运行测试。
+
+## 测试步骤
+
+1. 电源测试。
+2. 主控下载与串口日志测试。
+3. 传感器读取测试。
+4. 显示交互测试。
+5. 通信测试。
+6. 存储读写测试。
+7. 输出/执行器安全测试。
+8. 长时间整体联调测试。
+
+## 后续扩展方向
+
+${getExportExtensions(project)}
+
+## 注意事项
+
+- 实际接线前必须核对每个模块的数据手册、引脚定义和供电要求。
+- 3.3V 主控连接 5V 模块时，优先检查电平兼容性。
+- 电机、舵机、继电器、灯带、4G 模块等高功耗器件建议独立供电并与主控共地。
+- 初次制作建议分模块验证，不要一次性接上全部硬件。
+
+## 免责声明
+
+本 README 由 MCU LootBox 根据硬件组合自动生成，仅作为学习和项目灵感参考。实际制作前需要检查电压、电流、接口、电平兼容性、封装、供应链和器件资料手册。`;
+}
+
 function buildFeatureList(project) {
   const { sensor, display, communication, storage, actuator } = project.hardware;
   const features = [
@@ -2997,31 +4355,26 @@ function safeModuleName(name) {
 }
 
 function formatItem(item) {
-  return `${item.name}（${item.rarityLabel} · ${item.rarityTitle}）`;
+  return `${getPartName(item)}（${getRarityLabel(item.rarityKey || item.rarity)} · ${item.rarityTitle}）`;
 }
 
 function formatItemWithMeta(item) {
-  return `${formatItem(item)}；电压：${item.voltage}；接口：${formatInterface(item.interface)}；功耗：${item.powerLevel}；难度：${item.difficulty}；注意：${item.notes}`;
+  return `${formatItem(item)}；电压：${item.voltage}；接口：${formatInterface(item.interface)}；功耗：${item.powerLevel}；难度：${getDifficultyLabel(item.difficulty)}；注意：${getPartNotes(item)}`;
 }
 
 function formatCompatibilityMarkdown(compatibility) {
-  const lines = [
-    `## 兼容性分析`,
-    ``,
-    `结论：${compatibility.title}`,
-    ``,
-    compatibility.summary,
-    ``
-  ];
+  const lines = currentLang === "en"
+    ? [`## Compatibility Analysis`, ``, `Conclusion: ${getCompatibilityStatusLabel(compatibility.status)}`, ``, compatibility.summary, ``]
+    : [`## 兼容性分析`, ``, `结论：${getCompatibilityStatusLabel(compatibility.status)}`, ``, compatibility.summary, ``];
 
   if (compatibility.risks.length > 0) {
-    lines.push(`### 红色风险`, ...compatibility.risks.map((item) => `- ${item}`), ``);
+    lines.push(`### ${t("compatibility.red")}`, ...compatibility.risks.map((item) => `- ${item}`), ``);
   }
   if (compatibility.warnings.length > 0) {
-    lines.push(`### 需要注意`, ...compatibility.warnings.map((item) => `- ${item}`), ``);
+    lines.push(`### ${t("compatibility.yellow")}`, ...compatibility.warnings.map((item) => `- ${item}`), ``);
   }
   if (compatibility.passes.length > 0) {
-    lines.push(`### 基本可行`, ...compatibility.passes.map((item) => `- ${item}`), ``);
+    lines.push(`### ${t("compatibility.green")}`, ...compatibility.passes.map((item) => `- ${item}`), ``);
   }
 
   return lines.join("\n");
