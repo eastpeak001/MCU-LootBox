@@ -45,6 +45,18 @@ https://your-demo-link.example.com
 
 如果部署到 GitHub Pages，可以将这里替换为实际地址。
 
+## GitHub Pages 部署说明
+
+1. 打开你的 GitHub 仓库页面。
+2. 进入仓库的 `Settings`。
+3. 在左侧菜单中找到 `Pages`。
+4. 在 `Source` 中选择 `Deploy from a branch`。
+5. 在 `Branch` 中选择 `main`。
+6. 在 `Folder` 中选择 `/root`。
+7. 点击保存后，等待 GitHub Pages 自动部署完成。
+8. 部署完成后，GitHub 会生成一个在线访问链接。
+9. 将生成的在线链接填入本 README 的“在线演示”区域。
+
 ## 使用方法
 
 1. 下载或克隆本项目。
